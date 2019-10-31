@@ -1,5 +1,6 @@
 // c++ - std = c++ 11 - stdlib = libc++ interface.cpp - o interface
-// ./interface < values.txt
+// ./interface < values.txt > saida.txt
+
 #include <sstream>
 #include <string>
 #include <vector>
