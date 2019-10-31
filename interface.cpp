@@ -71,8 +71,39 @@ void printVector(){
         cout << get<0>(memory[i]) << " "<< get<1>(memory[i]) << " " << get<2>(memory[i]) << " " << get<3>(memory[i])  << endl;
     }
 }
+
+void trace(){
+    bool next  = true;
+    int pos = 0;
+    while(next){
+        string type = get<0>(memory[pos]);
+        if(type == "ji"){
+            cout << pos << endl;
+            pos = get<2>(memory[pos]);
+            //cout << get<1>(memory[pos]) << " -> " << get<2>(memory[pos]) << endl;
+        }else if(type == "bi"){
+            cout << pos << endl;
+            int prob = get<3>(memory[pos]);
+            //FIXME: saltar ou não de acordo com essa probabilidade 
+            if(prob < 50 ){
+                pos += 1;
+            }else{
+                pos = get<2>(memory[pos]);
+            }
+        }else{
+            cout << pos << endl;
+            pos += 1;
+        }
+        //FIXME: testar se de fato isso faz parar
+        if(pos > memory.size()){
+            next = false;
+        }
+    }
+}
+
 int main(){
     readInput();
     // printVector();
+    trace();
     return 0;
 }
