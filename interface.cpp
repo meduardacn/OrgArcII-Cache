@@ -6,6 +6,7 @@
 #include <vector>
 #include <tuple>
 #include <iostream>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -84,9 +85,10 @@ void trace(){
             //cout << get<1>(memory[pos]) << " -> " << get<2>(memory[pos]) << endl;
         }else if(type == "bi"){
             cout << pos << endl;
+            int random = rand()  % 100 + 1;
             int prob = get<3>(memory[pos]);
             //FIXME: saltar ou não de acordo com essa probabilidade 
-            if(prob < 50 ){
+            if(random < prob ){
                 pos += 1;
             }else{
                 pos = get<2>(memory[pos]);
