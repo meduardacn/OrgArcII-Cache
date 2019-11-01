@@ -88,7 +88,7 @@ void trace(){
             int random = rand()  % 100 + 1;
             int prob = get<3>(memory[pos]);
             //FIXME: saltar ou não de acordo com essa probabilidade 
-            if(random < prob ){
+            if(random > prob ){
                 pos += 1;
             }else{
                 pos = get<2>(memory[pos]);
