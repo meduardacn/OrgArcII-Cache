@@ -18,39 +18,107 @@ int SUBSTITUTION = 0;
 typedef struct ass_line
 {
     unsigned char valid;
-    int add;
+    int tag;
 }Ass_line;
 
-bool find (Ass_line* ass_mem, int beg, int end, int wanted)
+
+
+
+
+bool find (Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int** cache)
 {
     for(int i=beg; i<end; i++)
     {
-        if(ass_mem[i].add == wanted)
+        if(ass_mem[i].tag == tag && cache[i][word] == add) 
             return true;
+            
     }
     return false;
 }
 
 
-void substitution(Ass_line* ass_mem, int beg, int end, int add)
+
+
+
+
+
+void substitution(Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int** cache, int words_per_block)
 {
     int line = rand()%(end-beg + 1) + beg;
-    ass_mem[line].add = add;
+    ass_mem[line].tag = tag;
+    cache[line][word] = add;
+
+    int aux_index = word;
+    int aux_add = add;
+    while(aux_index > 0)
+    {
+        cache[line][--aux_index] = --aux_add;
+        cout<<"armazenei "<<aux_add<<" na posiçao "<<line<<","<<aux_index<<endl;
+    }
+
+    aux_index = word;
+    aux_add = add;
+    while(aux_index < words_per_block - 1)
+    {
+        cache[line][++aux_index] = ++aux_add;
+        cout<<"armazenei "<<aux_add<<" na posiçao "<<line<<","<<aux_index<<endl;
+    }
+
+    
+    cout<<"armazenei "<<aux_add<<" na posiçao "<<line<<","<<word<<endl;
 }
 
-void insert(Ass_line* ass_mem, int beg, int end, int add)
+void insert(Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int** cache, int words_per_block)
 {
     for(int i=beg; i<end; i++)
     {
         if(ass_mem[i].valid == 0)//if a line with vaidation bit == 0 is finded then
         {                        //the address is saved in this line
-            ass_mem[i].valid = 0;
-            ass_mem[i].add = add;
+            ass_mem[i].valid = 1;
+            ass_mem[i].tag = tag;
+            cache[i][word] = add;
+
+
+
+            int aux_index = word;
+            int aux_add = add;
+            while(aux_index > 0)
+            {
+                cache[i][--aux_index] = --aux_add;
+                cout<<"armazenei "<<aux_add<<" na posiçao "<<i<<","<<aux_index<<endl;
+            }
+
+            aux_index = word;
+            aux_add = add;
+            while(aux_index < words_per_block - 1)
+            {
+                cache[i][++aux_index] = ++aux_add;
+                cout<<"armazenei "<<aux_add<<" na posiçao "<<i<<","<<aux_index<<endl;
+            }
+
+
+
+            cout<<"armazenei "<<add<<" na posiçao "<<i<<","<<word<<endl;
             return;
         }
     }
-    substitution(ass_mem, beg, end, add);
+    substitution(ass_mem, beg, end, add, word, tag, cache, words_per_block);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 int main(int argc, char** argv)
@@ -84,7 +152,7 @@ int main(int argc, char** argv)
     for(int i=0; i<lines; i++)
     {
         ass_mem[i].valid = 0;
-        ass_mem[i].add = -1;
+        ass_mem[i].tag = -1;
     }
 
 
@@ -128,16 +196,14 @@ int main(int argc, char** argv)
         word_ind >>= tag_rep_size+ass_set_size;
         word_ind &= (unsigned char) (pow(2, word_rep_size) - 1);
 
-        //cout<< bitset<16>(pow(2,ass_set_size) - 1)<<endl;
-        cout<<"add: "<< bitset<16>(add)<<"  tag: "<< bitset<16>(tag)<<"  ass set: "<<bitset<16>(ass_set)<<
-        "  word: "<<bitset<16>(word_ind) <<"\n"<<endl;
+        //cout<<"add: "<< bitset<16>(add)<<"  tag: "<< bitset<16>(tag)<<"  ass set: "<<bitset<16>(ass_set)<<
+        //"  word: "<<bitset<16>(word_ind) <<"\n"<<endl;
 
         beg_ass_set = (lines/pathways) * ass_set;
         end_ass_set = beg_ass_set + (lines/pathways);
 
         int random = rand()  % 100 + 1;
-
-        if (find(ass_mem, beg_ass_set, end_ass_set, add))
+        if (find(ass_mem, beg_ass_set, end_ass_set, add, word_ind, tag, cache))
         {
             outFile << "hit : 1 \n";
         }
@@ -147,7 +213,7 @@ int main(int argc, char** argv)
             if(random <= 20)
             {
                 outFile << "miss, CL2:10 \n";
-                insert(ass_mem, beg_ass_set, end_ass_set, add);
+                insert(ass_mem, beg_ass_set, end_ass_set, add, word_ind, tag, cache, words_per_block);
             }
             else
             {
@@ -155,7 +221,7 @@ int main(int argc, char** argv)
                 if(random <= 20)
                 {
                     outFile << "miss, CL3:30 \n";
-                    insert(ass_mem, beg_ass_set, end_ass_set, add);
+                    insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block);
                 }
                 else
                 {
@@ -163,12 +229,12 @@ int main(int argc, char** argv)
                     if(random <= 40)
                     {
                         outFile << "miss, MR:100 \n";
-                        insert(ass_mem, beg_ass_set, end_ass_set, add);
+                        insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block);
                     }
                     else
                     {
                         outFile << "miss, HD:1000 \n";
-                        insert(ass_mem, beg_ass_set, end_ass_set, add);
+                        insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block);
                     }
                 }
             }
