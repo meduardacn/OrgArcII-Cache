@@ -9,9 +9,35 @@
 #include <bitset>
 using namespace std;
 
+typedef struct ass_line
+{
+    unsigned char valid;
+    int add;
+}Ass_line;
 
+bool find (Ass_line* ass_mem, int beg, int end, int wanted)
+{
+    for(int i=beg; i<end; i++)
+    {
+        if(ass_mem[i].add == wanted)
+            return true;
+    }
+    return false;
+}
 
-
+void insert(Ass_line* ass_mem, int beg, int end, int add)
+{
+    for(int i=beg; i<end; i++)
+    {
+        if(ass_mem[i].valid == 0)//if a line with vaidation bit == 0 is finded then
+        {                        //the address is saved in this line
+            ass_mem[i].valid = 0;
+            ass_mem[i].add = add;
+            return;
+        }
+    }
+    //ubstitution();//ainda n~ao implementei
+}
 
 
 int main(int argc, char** argv)
@@ -20,16 +46,23 @@ int main(int argc, char** argv)
         cout<<"few arguments provided, it needs four"<<endl;
 
 
-    int cache_size = (int) *argv[1] - 48;     //convert char to int
-    int words_per_block = (int) *argv[2]- 48; //convert char to int
-    int word_size = (int) *argv[3]- 48;       //convert char to int
-    int pathways = (int) *argv[4]- 48;        //convert char to int
+    int cache_size;     
+    int words_per_block; 
+    int word_size ;       
+    int pathways ;        
+    cout << "Tamanho da cache: "<<endl;
+    cin >> cache_size;
+    cout << "Palavras por bloco: "<<endl;
+    cin >> words_per_block;
+    cout << "Tamanho da palavra: "<<endl;
+    cin >> word_size;
+    cout << "Vias: "<<endl;
+    cin >> pathways;
+
     
 
-
-    
     int lines = cache_size/(words_per_block * word_size); // calculate number of lines
-    int * ass_mem = new int[lines]; 
+    Ass_line* ass_mem = new Ass_line[lines]; 
     int ** cache = new int* [lines];
     for (int i=0; i<lines; i++)
         cache[i] = new int[words_per_block];
@@ -45,7 +78,11 @@ int main(int argc, char** argv)
     int file_line;
     int add;
     int beg_ass_set;
+    int end_ass_set;
     ifstream inFile;
+    ofstream outFile;
+
+    outFile.open("output.txt");
 
 
     
@@ -74,8 +111,23 @@ int main(int argc, char** argv)
         cout<<"add: "<< bitset<16>(add)<<"  tag: "<< bitset<16>(tag)<<"  ass set: "<<bitset<16>(ass_set)<<
         "  word: "<<bitset<16>(word_ind) <<"\n"<<endl;
 
-        beg_ass_set = (lines/pathways);
-        cout<<"beg_ass_set: "<<beg_ass_set<<endl;
+        beg_ass_set = (lines/pathways) * ass_set;
+        end_ass_set = beg_ass_set + (lines/pathways);
+
+        int random = rand()  % 100 + 1;
+
+        if (find(ass_mem, beg_ass_set, end_ass_set, add))
+        {
+            outFile << "hit : 1 \n";
+        }
+        else if (random <= 20)
+        {
+            outFile << "miss, CL2:10";
+            insert(ass_mem, beg_ass_set, end_ass_set, add);
+        }
+
+        //cout<<"beg_ass_set: "<<beg_ass_set<<endl;
+        //cout<<"end_add_set: "<<end_ass_set<<endl;
         
     }
     
