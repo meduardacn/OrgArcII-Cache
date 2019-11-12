@@ -2,7 +2,7 @@
 //Run: ./associative_memory <cache size> <words per blocks> <word size> <pathways>
 
 
-
+#include <vector>
 #include <iostream>
 #include <fstream>
 #include <math.h> 
@@ -38,13 +38,31 @@ bool find (Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int*
 
 
 
-
-
-
-
-void substitution(Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int** cache, int words_per_block)
+int leastFrequency(vector<int> frequency)
 {
-    int line = rand()%(end-beg + 1) + beg;
+    int least_frequency = 0;
+    for(int i=0; i<frequency.size(); i++)
+    {
+        if(frequency[i] < least_frequency)
+            least_frequency = i;
+    }
+    return least_frequency;
+}
+
+
+
+void substitution(Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int** cache, int words_per_block, vector<int> frequency)
+{
+    int line;
+    if(SUBSTITUTION == 0)   
+        line = rand() % (((end-beg + 1) + beg) - 1);
+    else if (SUBSTITUTION == 1)
+    {
+        line = leastFrequency(frequency);
+    }
+
+
+    //cout<<"line: "<<line <<endl;
     ass_mem[line].tag = tag;
     cache[line][word] = add;
 
@@ -53,7 +71,7 @@ void substitution(Ass_line* ass_mem, int beg, int end, int add, int word, int ta
     while(aux_index > 0)
     {
         cache[line][--aux_index] = --aux_add;
-        cout<<"armazenei "<<aux_add<<" na posiçao "<<line<<","<<aux_index<<endl;
+        //cout<<"armazenei "<<aux_add<<" na posiçao "<<line<<","<<aux_index<<endl;
     }
 
     aux_index = word;
@@ -61,14 +79,15 @@ void substitution(Ass_line* ass_mem, int beg, int end, int add, int word, int ta
     while(aux_index < words_per_block - 1)
     {
         cache[line][++aux_index] = ++aux_add;
-        cout<<"armazenei "<<aux_add<<" na posiçao "<<line<<","<<aux_index<<endl;
+        //cout<<"armazenei "<<aux_add<<" na posiçao "<<line<<","<<aux_index<<endl;
     }
 
     
-    cout<<"armazenei "<<aux_add<<" na posiçao "<<line<<","<<word<<endl;
+    //cout<<"armazenei "<<aux_add<<" na posiçao "<<line<<","<<word<<endl;
+    
 }
 
-void insert(Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int** cache, int words_per_block)
+void insert(Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int** cache, int words_per_block, vector<int> frequency)
 {
     for(int i=beg; i<end; i++)
     {
@@ -85,7 +104,7 @@ void insert(Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int
             while(aux_index > 0)
             {
                 cache[i][--aux_index] = --aux_add;
-                cout<<"armazenei "<<aux_add<<" na posiçao "<<i<<","<<aux_index<<endl;
+                //cout<<"armazenei "<<aux_add<<" na posiçao "<<i<<","<<aux_index<<endl;
             }
 
             aux_index = word;
@@ -93,16 +112,16 @@ void insert(Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int
             while(aux_index < words_per_block - 1)
             {
                 cache[i][++aux_index] = ++aux_add;
-                cout<<"armazenei "<<aux_add<<" na posiçao "<<i<<","<<aux_index<<endl;
+                //cout<<"armazenei "<<aux_add<<" na posiçao "<<i<<","<<aux_index<<endl;
             }
 
 
 
-            cout<<"armazenei "<<add<<" na posiçao "<<i<<","<<word<<endl;
+            //cout<<"armazenei "<<add<<" na posiçao "<<i<<","<<word<<endl;
             return;
         }
     }
-    substitution(ass_mem, beg, end, add, word, tag, cache, words_per_block);
+    substitution(ass_mem, beg, end, add, word, tag, cache, words_per_block, frequency);
 }
 
 
@@ -139,10 +158,14 @@ int main(int argc, char** argv)
     cin >> word_size;
     cout << "Vias: "<<endl;
     cin >> pathways;
-
+    cout<< "[0] Random Substitution"<<endl;
+    cout<< "[1] Least Frequent Used"<<endl;
+    cin >> SUBSTITUTION;
     
 
     int lines = cache_size/(words_per_block * word_size); // calculate number of lines
+    //cout<<"lines: "<<lines<<endl;
+    vector<int> frequency (lines, 0);
     Ass_line* ass_mem = new Ass_line[lines]; 
     int ** cache = new int* [lines];
     for (int i=0; i<lines; i++)
@@ -154,6 +177,7 @@ int main(int argc, char** argv)
         ass_mem[i].valid = 0;
         ass_mem[i].tag = -1;
     }
+    
 
 
     int word_rep_size = ceil(log2(words_per_block)); //bits needed to represent a word index
@@ -213,7 +237,7 @@ int main(int argc, char** argv)
             if(random <= 20)
             {
                 outFile << "miss, CL2:10 \n";
-                insert(ass_mem, beg_ass_set, end_ass_set, add, word_ind, tag, cache, words_per_block);
+                insert(ass_mem, beg_ass_set, end_ass_set, add, word_ind, tag, cache, words_per_block, frequency);
             }
             else
             {
@@ -221,7 +245,7 @@ int main(int argc, char** argv)
                 if(random <= 20)
                 {
                     outFile << "miss, CL3:30 \n";
-                    insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block);
+                    insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block, frequency);
                 }
                 else
                 {
@@ -229,12 +253,12 @@ int main(int argc, char** argv)
                     if(random <= 40)
                     {
                         outFile << "miss, MR:100 \n";
-                        insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block);
+                        insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block, frequency);
                     }
                     else
                     {
                         outFile << "miss, HD:1000 \n";
-                        insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block);
+                        insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block, frequency);
                     }
                 }
             }
