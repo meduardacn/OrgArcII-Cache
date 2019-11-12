@@ -7,7 +7,13 @@
 #include <fstream>
 #include <math.h> 
 #include <bitset>
+#include <stdio.h>
 using namespace std;
+
+
+
+int SUBSTITUTION = 0;
+
 
 typedef struct ass_line
 {
@@ -25,6 +31,13 @@ bool find (Ass_line* ass_mem, int beg, int end, int wanted)
     return false;
 }
 
+
+void substitution(Ass_line* ass_mem, int beg, int end, int add)
+{
+    int line = rand()%(end-beg + 1) + beg;
+    ass_mem[line].add = add;
+}
+
 void insert(Ass_line* ass_mem, int beg, int end, int add)
 {
     for(int i=beg; i<end; i++)
@@ -36,7 +49,7 @@ void insert(Ass_line* ass_mem, int beg, int end, int add)
             return;
         }
     }
-    //ubstitution();//ainda n~ao implementei
+    substitution(ass_mem, beg, end, add);
 }
 
 
@@ -68,6 +81,13 @@ int main(int argc, char** argv)
         cache[i] = new int[words_per_block];
     
 
+    for(int i=0; i<lines; i++)
+    {
+        ass_mem[i].valid = 0;
+        ass_mem[i].add = -1;
+    }
+
+
     int word_rep_size = ceil(log2(words_per_block)); //bits needed to represent a word index
     int ass_set_size = ceil(log2(pathways)); // bits needed to represent associative set
     int tag_rep_size = 32 - (word_rep_size + ass_set_size);// number of bits represent tag
@@ -82,6 +102,7 @@ int main(int argc, char** argv)
     ifstream inFile;
     ofstream outFile;
 
+    remove("output.txt");
     outFile.open("output.txt");
 
 
@@ -120,10 +141,38 @@ int main(int argc, char** argv)
         {
             outFile << "hit : 1 \n";
         }
-        else if (random <= 20)
+        else
         {
-            outFile << "miss, CL2:10";
-            insert(ass_mem, beg_ass_set, end_ass_set, add);
+            int random = rand()  % 100 + 1;
+            if(random <= 20)
+            {
+                outFile << "miss, CL2:10 \n";
+                insert(ass_mem, beg_ass_set, end_ass_set, add);
+            }
+            else
+            {
+                random = rand()  % 100 + 1;
+                if(random <= 20)
+                {
+                    outFile << "miss, CL3:30 \n";
+                    insert(ass_mem, beg_ass_set, end_ass_set, add);
+                }
+                else
+                {
+                    random = rand()  % 100 + 1;
+                    if(random <= 40)
+                    {
+                        outFile << "miss, MR:100 \n";
+                        insert(ass_mem, beg_ass_set, end_ass_set, add);
+                    }
+                    else
+                    {
+                        outFile << "miss, HD:1000 \n";
+                        insert(ass_mem, beg_ass_set, end_ass_set, add);
+                    }
+                }
+            }
+            
         }
 
         //cout<<"beg_ass_set: "<<beg_ass_set<<endl;

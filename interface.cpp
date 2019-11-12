@@ -1,4 +1,4 @@
-// c++ - std = c++ 11 - stdlib = libc++ interface.cpp - o interface
+// g++ -std=c++11 interface.cpp -o interface
 // ./interface < values.txt > saida.txt
 
 #include <sstream>
