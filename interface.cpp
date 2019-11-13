@@ -1,6 +1,6 @@
 // g++ -std=c++11 interface.cpp -o interface
-// ./interface < values.txt > saida.txt
-
+// ./interface
+#include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -12,6 +12,9 @@ using namespace std;
 
 typedef tuple<string, int, int,int > myTuple;
 vector< myTuple > memory;
+
+ifstream inFile;
+ofstream outFile;
 
 void handle(string input){
     string delimiter = ":";
@@ -62,8 +65,17 @@ void handle(string input){
 }
 
 void readInput(){
+    remove("saida.txt");
+    outFile.open("trace.txt");
+    inFile.open("values.txt");
+
+    if (!inFile){
+        cout << "Unable to open file";
+        exit(1); // terminate with error
+    }
+
     string input;
-    while(getline(cin, input)){
+    while (inFile >> input){
         handle(input);
     }
 }
@@ -80,11 +92,11 @@ void trace(){
     while(next){
         string type = get<0>(memory[pos]);
         if(type == "ji"){
-            cout << pos << endl;
+            outFile << pos << endl;
             pos = get<2>(memory[pos]);
             //cout << get<1>(memory[pos]) << " -> " << get<2>(memory[pos]) << endl;
         }else if(type == "bi"){
-            cout << pos << endl;
+            outFile << pos << endl;
             int random = rand()  % 100 + 1;
             int prob = get<3>(memory[pos]);
             //FIXME: saltar ou não de acordo com essa probabilidade 
@@ -94,7 +106,7 @@ void trace(){
                 pos = get<2>(memory[pos]);
             }
         }else{
-            cout << pos << endl;
+            outFile << pos << endl;
             pos += 1;
         }
         //FIXME: testar se de fato isso faz parar

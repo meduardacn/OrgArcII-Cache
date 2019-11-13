@@ -151,12 +151,23 @@ int main(int argc, char** argv){
     remove("output.txt");
     outFile.open("output.txt");
 
-    inFile.open("saida.txt");
+    inFile.open("trace.txt");
     if (!inFile) {
         cout << "Unable to open file";
         exit(1); // terminate with error
     }
-    
+
+    //-------------------------------------------------------------------------------------------
+    outFile << "CL2:10:20\n";
+    outFile << "CL3:30:20\n";
+    outFile << "MR:100:40\n";
+    outFile << "HD:1000:100 \n";
+    outFile << "//\n";
+    //-------------------------------------------------------------------------------------------
+    outFile << "associative_sets:" << ass_set_size << endl;
+    outFile << "//\n";
+    //-------------------------------------------------------------------------------------------
+
     while (inFile >> file_line) {
         add = file_line;
         tag = add>>(32 - tag_rep_size); 
@@ -169,37 +180,54 @@ int main(int argc, char** argv){
         word_ind >>= tag_rep_size+ass_set_size;
         word_ind &= (unsigned char) (pow(2, word_rep_size) - 1);
 
-        //cout<<"add: "<< bitset<16>(add)<<"  tag: "<< bitset<16>(tag)<<"  ass set: "<<bitset<16>(ass_set)<<
-        //"  word: "<<bitset<16>(word_ind) <<"\n"<<endl;
+        // cout<<"add: "<< bitset<16>(add)<<"  tag: "<< bitset<16>(tag)<<"  ass set: "<<bitset<16>(ass_set)<<
+        // "  word: "<<bitset<16>(word_ind) <<"\n"<<endl;
+
+        //-------------------------------------------------------------------------------------------
+        outFile << "\n";
+        outFile << "address:" << bitset<16>(add) << "("<< add << ")"<<"\n";
+        outFile << "tag:" << bitset<16>(tag) << "(" << tag << ")" << "\n";
+        outFile << "ass_set:" << bitset<16>(ass_set) << "(" << ass_set << ")"<< "\n";
+        outFile << "word:" << bitset<16>(word_ind) << "(" << word_ind << ")"<< "\n";
+        //-------------------------------------------------------------------------------------------
 
         beg_ass_set = (lines/pathways) * ass_set;
         end_ass_set = beg_ass_set + (lines/pathways);
 
-        int random = rand()  % 100 + 1;
+        
+        int random = rand() % 100 + 1;
         if (find(ass_mem, beg_ass_set, end_ass_set, add, word_ind, tag, cache)){
             outFile << "hit:CL1:1 \n";
-        }
-        else{
+        }else{
             int random = rand()  % 100 + 1;
-            if(random <= 20)
-            {
-                outFile << "miss:CL2:10 \n";
+            if(random <= 20){
+                outFile << "miss:CL1\n";
+                outFile << "hit:CL2:10 \n";
                 insert(ass_mem, beg_ass_set, end_ass_set, add, word_ind, tag, cache, words_per_block, &frequency);
             }
             else{
                 random = rand()  % 100 + 1;
                 if(random <= 20){
-                    outFile << "miss:CL3:30 \n";
+                    outFile << "miss:CL1\n";
+                    outFile << "miss:CL2\n";
+                    outFile << "hit:CL3:30 \n";
                     insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block, &frequency);
                 }
                 else{
                     random = rand()  % 100 + 1;
                     if(random <= 40){
-                        outFile << "miss:MR:100 \n";
+                        outFile << "miss:CL1\n";
+                        outFile << "miss:CL2\n";
+                        outFile << "miss:CL3\n";
+                        outFile << "hit:MR:100 \n";
                         insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block, &frequency);
                     }
                     else{
-                        outFile << "miss:HD:1000 \n";
+                        outFile << "miss:CL1\n";
+                        outFile << "miss:CL2\n";
+                        outFile << "miss:CL3\n";
+                        outFile << "miss:MR\n";
+                        outFile << "hit:HD:1000 \n";
                         insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block, &frequency);
                     }
                 }
@@ -208,6 +236,7 @@ int main(int argc, char** argv){
         //cout<<"beg_ass_set: "<<beg_ass_set<<endl;
         //cout<<"end_add_set: "<<end_ass_set<<endl;
     }
+    outFile << "\nend_program\n";
     inFile.close();
     return 0;
 }
