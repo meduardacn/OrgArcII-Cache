@@ -31,22 +31,24 @@ int leastFrequency(vector<int> frequency)
     int least_frequency = 0;
     for(int i=0; i<frequency.size(); i++)
     {
-        if(frequency[i] < least_frequency)
+        if(frequency[i] < frequency[least_frequency])
             least_frequency = i;
     }
     return least_frequency;
 }
 
-void substitution(Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int** cache, int words_per_block, vector<int> frequency)
+void substitution(Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int** cache, int words_per_block, vector<int>* frequency)
 {
     int line;
     if(SUBSTITUTION == 0)   
         line = rand() % (((end-beg + 1) + beg) - 1);
     else if (SUBSTITUTION == 1){
-        line = leastFrequency(frequency);
+        line = leastFrequency(*frequency);
     }
 
     //cout<<"line: "<<line <<endl;
+    (*frequency)[line] ++;
+    //cout<<"frequency: "<<(*frequency)[line]<<endl;
     ass_mem[line].tag = tag;
     cache[line][word] = add;
 
@@ -68,7 +70,7 @@ void substitution(Ass_line* ass_mem, int beg, int end, int add, int word, int ta
     //cout<<"armazenei "<<aux_add<<" na posiçao "<<line<<","<<word<<endl;
 }
 
-void insert(Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int** cache, int words_per_block, vector<int> frequency)
+void insert(Ass_line* ass_mem, int beg, int end, int add, int word, int tag, int** cache, int words_per_block, vector<int>* frequency)
 {
     for(int i=beg; i<end; i++)
     {
@@ -167,8 +169,8 @@ int main(int argc, char** argv){
         word_ind >>= tag_rep_size+ass_set_size;
         word_ind &= (unsigned char) (pow(2, word_rep_size) - 1);
 
-        cout<<"add: "<< bitset<16>(add)<<"  tag: "<< bitset<16>(tag)<<"  ass set: "<<bitset<16>(ass_set)<<
-        "  word: "<<bitset<16>(word_ind) <<"\n"<<endl;
+        //cout<<"add: "<< bitset<16>(add)<<"  tag: "<< bitset<16>(tag)<<"  ass set: "<<bitset<16>(ass_set)<<
+        //"  word: "<<bitset<16>(word_ind) <<"\n"<<endl;
 
         beg_ass_set = (lines/pathways) * ass_set;
         end_ass_set = beg_ass_set + (lines/pathways);
@@ -182,23 +184,23 @@ int main(int argc, char** argv){
             if(random <= 20)
             {
                 outFile << "miss:CL2:10 \n";
-                insert(ass_mem, beg_ass_set, end_ass_set, add, word_ind, tag, cache, words_per_block, frequency);
+                insert(ass_mem, beg_ass_set, end_ass_set, add, word_ind, tag, cache, words_per_block, &frequency);
             }
             else{
                 random = rand()  % 100 + 1;
                 if(random <= 20){
                     outFile << "miss:CL3:30 \n";
-                    insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block, frequency);
+                    insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block, &frequency);
                 }
                 else{
                     random = rand()  % 100 + 1;
                     if(random <= 40){
                         outFile << "miss:MR:100 \n";
-                        insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block, frequency);
+                        insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block, &frequency);
                     }
                     else{
                         outFile << "miss:HD:1000 \n";
-                        insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block, frequency);
+                        insert(ass_mem, beg_ass_set, end_ass_set, add,  word_ind, tag, cache, words_per_block, &frequency);
                     }
                 }
             }
