@@ -164,7 +164,7 @@ int main(int argc, char** argv){
     outFile << "HD:1000:100 \n";
     outFile << "//\n";
     //-------------------------------------------------------------------------------------------
-    outFile << "associative_sets:" << ass_set_size << endl;
+    outFile << "associative_sets:" << pathways << endl;
     outFile << "//\n";
     //-------------------------------------------------------------------------------------------
 
