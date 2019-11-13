@@ -1,5 +1,5 @@
 //Compile: g++ associative_memory.cpp -o associative_memory
-//Run: ./associative_memory <cache size> <words per blocks> <word size> <pathways>
+//Run: ./associative_memory 
 #include <vector>
 #include <iostream>
 #include <fstream>

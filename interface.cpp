@@ -1,5 +1,5 @@
 // g++ -std=c++11 interface.cpp -o interface
-// ./interface
+// ./interface <values.txt>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -64,10 +64,10 @@ void handle(string input){
     }
 }
 
-void readInput(){
+void readInput(char** argv){
     remove("saida.txt");
     outFile.open("trace.txt");
-    inFile.open("values.txt");
+    inFile.open(argv[1]);
 
     if (!inFile){
         cout << "Unable to open file";
@@ -116,8 +116,8 @@ void trace(){
     }
 }
 
-int main(){
-    readInput();
+int main(int argc, char** argv){
+    readInput(argv);
     // printVector();
     trace();
     return 0;
