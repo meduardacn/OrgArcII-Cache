@@ -1,5 +1,10 @@
-// g++ -std=c++11 interface.cpp -o interface
-// ./interface <values.txt>
+/**********************************************************
+ * 
+ * 
+ * Compile: g++ -std=c++11 interface.cpp -o interface
+ * Run: ./interface <values.txt>
+**********************************************************/
+
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -10,10 +15,20 @@
 
 using namespace std;
 
-typedef tuple<string, int, int,int > myTuple;
+//tuple that represents each memory position 
+//<command type, address, jump address, jump probability>
+//if command is "ji", jump probability is 100
+typedef tuple<string, int, int, int> myTuple;
+
+
+// vector used to store the jumps in the right position
 vector< myTuple > memory;
 
+
+// input file
 ifstream inFile;
+
+//output file
 ofstream outFile;
 
 void handle(string input){
@@ -43,7 +58,7 @@ void handle(string input){
         pos = input.find(delimiter);
         token = input.substr(0, pos);
         int tgt = stoi(token);
-        tuple<string, int, int, int> tp("ji", adr, tgt, NULL);
+        tuple<string, int, int, int> tp("ji", adr, tgt, 100);
         memory[adr] = tp;
     }
     else if (token == "bi"){
@@ -91,15 +106,10 @@ void trace(){
     int pos = 0;
     while(next){
         string type = get<0>(memory[pos]);
-        if(type == "ji"){
+        if(type == "bi" || type == "ji"){
             outFile << pos << endl;
-            pos = get<2>(memory[pos]);
-            //cout << get<1>(memory[pos]) << " -> " << get<2>(memory[pos]) << endl;
-        }else if(type == "bi"){
-            outFile << pos << endl;
-            int random = rand()  % 100 + 1;
+            int random = rand()  % 101;
             int prob = get<3>(memory[pos]);
-            //FIXME: saltar ou não de acordo com essa probabilidade 
             if(random > prob ){
                 pos += 1;
             }else{
@@ -109,7 +119,6 @@ void trace(){
             outFile << pos << endl;
             pos += 1;
         }
-        //FIXME: testar se de fato isso faz parar
         if(pos > memory.size()){
             next = false;
         }
